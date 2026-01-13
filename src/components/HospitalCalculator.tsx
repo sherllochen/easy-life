@@ -1,37 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-
-interface CalculationResult {
-  netCost: number
-  loadingCost: number
-  mlsCost: number
-  savedPremium: number
-  currentLoading: number
-  mlsRate: number
-}
+import { calculateDelayCost, formatCurrency, type CalculationResult } from '@/utilities/hospitalCalculator'
 
 export function HospitalCalculator() {
   const [age, setAge] = useState<string>('')
   const [income, setIncome] = useState<string>('')
   const [premium, setPremium] = useState<string>('2000')
   const [result, setResult] = useState<CalculationResult | null>(null)
-
-  const calculateMlsRate = (income: number): number => {
-    // Single person MLS thresholds for 2024-25
-    if (income <= 97000) return 0
-    if (income <= 113000) return 0.01
-    if (income <= 151000) return 0.0125
-    return 0.015
-  }
-
-  const calculateCurrentLoading = (age: number): number => {
-    // For Australian born, base age is 30
-    const baseAge = 30
-    const yearsLate = Math.max(0, age - baseAge)
-    const loading = Math.min(yearsLate * 0.02, 0.7) // Maximum 70%
-    return loading
-  }
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,34 +20,17 @@ export function HospitalCalculator() {
       return
     }
 
-    const X = 1 // Delay years (hardcoded to 1 for Slice 1)
-    const P = premiumNum
-    const L0 = calculateCurrentLoading(ageNum)
-    const mlsRate = calculateMlsRate(incomeNum)
-
-    // Formula: Net Additional Cost = P × X × 0.2 + Income × MLS Rate × X - P × (1 + L₀) × X
-    const loadingCost = P * X * 0.2
-    const mlsCost = incomeNum * mlsRate * X
-    const savedPremium = P * (1 + L0) * X
-    const netCost = loadingCost + mlsCost - savedPremium
-
-    setResult({
-      netCost,
-      loadingCost,
-      mlsCost,
-      savedPremium,
-      currentLoading: L0,
-      mlsRate,
+    // Calculate using extracted utility
+    const calculationResult = calculateDelayCost({
+      age: ageNum,
+      income: incomeNum,
+      premium: premiumNum,
+      delayYears: 1, // Hardcoded to 1 for Slice 1
+      isFamily: false, // Hardcoded to single for Slice 1
+      isImmigrant: false, // Hardcoded to Australian born for Slice 1
     })
-  }
 
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-AU', {
-      style: 'currency',
-      currency: 'AUD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Math.abs(amount))
+    setResult(calculationResult)
   }
 
   return (
