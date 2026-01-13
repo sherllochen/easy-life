@@ -115,11 +115,18 @@ If you prefer to use Docker for local development instead of installing Postgres
    pnpm dev
    ```
 
-7. **Access your app:**
+7. **(Optional) Install Playwright browsers for e2e testing:**
+   ```bash
+   pnpm exec playwright install
+   ```
+
+   This is only needed if you want to run end-to-end tests.
+
+8. **Access your app:**
    - Frontend: http://localhost:3000
    - Admin panel: http://localhost:3000/admin
 
-8. **Create your first admin user** at `/admin` and optionally seed the database
+9. **Create your first admin user** at `/admin` and optionally seed the database
 
 **Managing Docker:**
 - Stop database: `docker-compose down`
