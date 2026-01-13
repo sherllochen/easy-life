@@ -1,5 +1,11 @@
-import PageTemplate, { generateMetadata } from './[slug]/page'
+import type { Metadata } from 'next'
+import { HospitalCalculator } from '@/components/HospitalCalculator'
 
-export default PageTemplate
+export const metadata: Metadata = {
+  title: 'Hospital Insurance Calculator',
+  description: 'Calculate the cost of delaying Australian private hospital insurance purchase',
+}
 
-export { generateMetadata }
+export default function HomePage() {
+  return <HospitalCalculator />
+}
