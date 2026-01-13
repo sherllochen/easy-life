@@ -75,15 +75,56 @@ After you click the `Deploy` button above, you'll want to have standalone copy o
 
 That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
 
-#### Docker (Optional)
+#### Docker (Recommended for Local Development)
 
-If you prefer to use Docker for local development instead of a local Postgres instance, the provided docker-compose.yml file can be used.
+If you prefer to use Docker for local development instead of installing Postgres locally, follow these steps:
 
-To do so, follow these steps:
+1. **Copy the environment file:**
+   ```bash
+   cp .env.example .env
+   ```
 
-- Modify the `POSTGRES_URL` in your `.env` file to `postgres://postgres@localhost:54320/<dbname>`
-- Modify the `docker-compose.yml` file's `POSTGRES_DB` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+2. **Update the `.env` file with your database configuration:**
+   ```bash
+   POSTGRES_URL=postgresql://postgres@127.0.0.1:54320/easylife
+   PAYLOAD_SECRET=your-secret-key-here
+   NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+   CRON_SECRET=your-cron-secret-here
+   PREVIEW_SECRET=your-preview-secret-here
+   ```
+
+   > Generate secure random strings for the secret values. The `docker-compose.yml` is already configured to use port 54320 and the database name should match between your `.env` file and `docker-compose.yml`.
+
+3. **Start Docker Desktop/OrbStack** on your machine
+
+4. **Start the PostgreSQL database:**
+   ```bash
+   docker-compose up -d
+   ```
+
+   This will start a PostgreSQL database in the background on port 54320.
+
+5. **Run the database migrations:**
+   ```bash
+   pnpm payload migrate
+   ```
+
+6. **Install dependencies and start the dev server:**
+   ```bash
+   pnpm install
+   pnpm dev
+   ```
+
+7. **Access your app:**
+   - Frontend: http://localhost:3000
+   - Admin panel: http://localhost:3000/admin
+
+8. **Create your first admin user** at `/admin` and optionally seed the database
+
+**Managing Docker:**
+- Stop database: `docker-compose down`
+- View logs: `docker-compose logs -f`
+- Restart database: `docker-compose restart`
 
 ## How it works
 
