@@ -235,6 +235,27 @@ The `.cursor/rules/` directory contains detailed Payload CMS guides from the off
 
 Refer to `AGENTS.md` for comprehensive Payload CMS development rules including security patterns, transaction safety, and access control.
 
+## Development Workflow
+
+**CRITICAL**: Before starting any feature development, read `docs/FOR_AGENTS/MORE_INSTRUCTIONS.md`.
+
+Key requirements:
+1. **Vertical Slicing**: Split features into small, visually verifiable slices that go through all layers (UI → API → DB)
+2. **Test-First Development**: Write Playwright e2e tests BEFORE implementation and get user approval
+3. **Visual Verification**: Every change must be verifiable in the browser/UI
+
+Example workflow:
+```
+1. Understand feature requirements
+2. Break into vertical slices
+3. Write Playwright tests for first slice
+4. Submit tests for user review
+5. Wait for approval
+6. Implement slice to make tests pass
+7. Let user verify visually
+8. Repeat for next slice
+```
+
 ## Deployment Notes
 
 ### Vercel Deployment
