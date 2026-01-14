@@ -11,6 +11,8 @@ export function HospitalCalculator() {
   const [numChildren, setNumChildren] = useState<string>('0')
   const [isImmigrant, setIsImmigrant] = useState<boolean>(false)
   const [medicareAge, setMedicareAge] = useState<string>('')
+  const [delayYears, setDelayYears] = useState<string>('1')
+  const [showComparison, setShowComparison] = useState<boolean>(false)
   const [result, setResult] = useState<CalculationResult | null>(null)
 
   // Calculate MLS rate and tier info dynamically
@@ -105,6 +107,7 @@ export function HospitalCalculator() {
     const premiumNum = parseInt(premium)
     const childrenNum = parseInt(numChildren) || 0
     const medicareAgeNum = isImmigrant ? parseInt(medicareAge) : undefined
+    const delayYearsNum = parseInt(delayYears) || 1
 
     if (!ageNum || !incomeNum || !premiumNum) {
       return
@@ -120,7 +123,7 @@ export function HospitalCalculator() {
       age: ageNum,
       income: incomeNum,
       premium: premiumNum,
-      delayYears: 1, // Hardcoded to 1 for Slice 1
+      delayYears: delayYearsNum, // Now dynamic based on input
       isFamily, // Now dynamic based on toggle
       isImmigrant, // Now dynamic based on checkbox
       numChildren: childrenNum,
@@ -129,6 +132,62 @@ export function HospitalCalculator() {
 
     setResult(calculationResult)
   }
+
+  // Calculate multiple scenarios for comparison
+  const getComparisonScenarios = () => {
+    const ageNum = parseInt(age)
+    const incomeNum = parseInt(income)
+    const premiumNum = parseInt(premium)
+    const childrenNum = parseInt(numChildren) || 0
+    const medicareAgeNum = isImmigrant ? parseInt(medicareAge) : undefined
+
+    // Validate all required inputs are valid numbers
+    if (!ageNum || isNaN(ageNum) || !incomeNum || isNaN(incomeNum) || !premiumNum || isNaN(premiumNum)) {
+      return []
+    }
+
+    if (isImmigrant && (!medicareAgeNum || isNaN(medicareAgeNum))) {
+      return []
+    }
+
+    const scenarios = [1, 3, 5, 10]
+
+    return scenarios.map((years) => {
+      const result = calculateDelayCost({
+        age: ageNum,
+        income: incomeNum,
+        premium: premiumNum,
+        delayYears: years,
+        isFamily,
+        isImmigrant,
+        numChildren: childrenNum,
+        medicareAge: medicareAgeNum,
+      })
+
+      // Determine recommendation based on cost
+      let recommendation = 'Consider'
+      if (result.netCost < -500) {
+        recommendation = 'Can wait'
+      } else if (result.netCost > 1000) {
+        recommendation = 'Buy now'
+      }
+
+      return {
+        years,
+        result,
+        recommendation,
+      }
+    })
+  }
+
+  const comparisonScenarios = getComparisonScenarios()
+
+  // Find best option (most negative = saves most)
+  const bestScenarioIndex = comparisonScenarios.length > 0
+    ? comparisonScenarios.reduce((bestIdx, scenario, idx, arr) =>
+        scenario.result.netCost < arr[bestIdx].result.netCost ? idx : bestIdx
+      , 0)
+    : -1
 
   const loadingInfo = getLoadingInfo()
 
@@ -340,12 +399,41 @@ export function HospitalCalculator() {
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 transition-colors font-medium"
-        >
-          Calculate
-        </button>
+        <div>
+          <label htmlFor="delayYears" className="block text-sm font-medium mb-2">
+            Delay Years
+          </label>
+          <input
+            type="number"
+            id="delayYears"
+            data-testid="delay-years-input"
+            value={delayYears}
+            onChange={(e) => setDelayYears(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Years to delay"
+            min="1"
+            max="10"
+            required
+          />
+        </div>
+
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 transition-colors font-medium"
+          >
+            Calculate
+          </button>
+
+          <button
+            type="button"
+            data-testid={showComparison ? 'hide-comparison' : 'show-comparison'}
+            onClick={() => setShowComparison(!showComparison)}
+            className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 transition-colors font-medium"
+          >
+            {showComparison ? 'Hide Comparison' : 'Show Comparison'}
+          </button>
+        </div>
       </form>
 
       {result && (
@@ -353,7 +441,9 @@ export function HospitalCalculator() {
           <h2 className="text-2xl font-semibold mb-4">Results</h2>
 
           <div className="mb-4">
-            <div className="text-lg font-medium mb-2">Net Additional Cost (1 year delay):</div>
+            <div className="text-lg font-medium mb-2">
+              Net Additional Cost ({delayYears} {parseInt(delayYears) === 1 ? 'year' : 'years'} delay):
+            </div>
             <div data-testid="net-cost" className="text-3xl font-bold text-blue-600">
               {result.netCost < 0 ? '-' : ''}
               {formatCurrency(result.netCost)}
@@ -363,15 +453,60 @@ export function HospitalCalculator() {
           <div data-testid="result-message" className="text-lg mt-4">
             {result.netCost < 0 ? (
               <p className="text-green-700">
-                💰 Delaying 1 year <strong>saves</strong> {formatCurrency(result.netCost)}
+                💰 Delaying {delayYears} {parseInt(delayYears) === 1 ? 'year' : 'years'} <strong>saves</strong> {formatCurrency(Math.abs(result.netCost))}
               </p>
             ) : result.netCost > 0 ? (
               <p className="text-red-700">
-                ⚠️ Delaying 1 year <strong>costs</strong> {formatCurrency(result.netCost)} more
+                ⚠️ Delaying {delayYears} {parseInt(delayYears) === 1 ? 'year' : 'years'} <strong>costs</strong> {formatCurrency(result.netCost)} more
               </p>
             ) : (
               <p className="text-gray-700">Break-even: Both options cost the same</p>
             )}
+          </div>
+        </div>
+      )}
+
+      {showComparison && comparisonScenarios.length > 0 && (
+        <div data-testid="comparison-table" className="mt-6 bg-white p-6 rounded-lg border border-gray-200">
+          <h2 className="text-2xl font-semibold mb-4">Multi-Year Comparison</h2>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="text-left py-3 px-4 font-semibold">Delay Years</th>
+                  <th className="text-right py-3 px-4 font-semibold">Net Cost</th>
+                  <th className="text-left py-3 px-4 font-semibold">Recommendation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonScenarios.map((scenario, index) => {
+                  const isBest = index === bestScenarioIndex
+                  const netCost = scenario.result.netCost
+
+                  return (
+                    <tr
+                      key={scenario.years}
+                      data-testid="comparison-row"
+                      className={`border-b border-gray-200 ${isBest ? 'bg-green-50 font-semibold' : ''}`}
+                    >
+                      <td className="py-3 px-4">
+                        {scenario.years} {scenario.years === 1 ? 'year' : 'years'}
+                        {isBest && <span data-testid="best-option" className="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded">Best</span>}
+                      </td>
+                      <td data-testid="scenario-cost" className={`py-3 px-4 text-right font-medium ${netCost < 0 ? 'text-green-600' : netCost > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                        {netCost < 0 ? (
+                          <>-{formatCurrency(Math.abs(netCost))} <span className="text-sm font-normal">(saves)</span></>
+                        ) : (
+                          formatCurrency(netCost)
+                        )}
+                      </td>
+                      <td className="py-3 px-4">{scenario.recommendation}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
