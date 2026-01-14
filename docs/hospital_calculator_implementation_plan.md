@@ -414,8 +414,8 @@ src/components/
 - ✅ **Slice 0 (POC):** Complete - Basic homepage with calculator component
 - ✅ **Slice 1:** Complete - Basic calculator with core formula (1-year delay, single person)
 - ✅ **Refactoring:** Complete - Extracted all calculation logic with 31 unit tests
-- ⏳ **Slice 2:** Ready to start - Family status & MLS auto-calculation
-- ⏳ **Slice 3:** Pending
+- ✅ **Slice 2:** Complete - Family status & MLS auto-calculation
+- ⏳ **Slice 3:** Ready to start - Loading calculation (age-based & immigrant)
 - ⏳ **Slice 4:** Pending
 - ⏳ **Slice 5:** Pending
 - ⏳ **Slice 6:** Pending
@@ -425,16 +425,16 @@ src/components/
 
 ## Next Steps
 
-1. Review this plan and approve/adjust slices
-2. Write Playwright tests for Slice 1
-3. Get approval on tests
-4. Implement Slice 1
-5. Verify and commit
-6. Repeat for remaining slices
+1. ~~Review this plan and approve/adjust slices~~ ✅
+2. ~~Write Playwright tests for Slice 1~~ ✅
+3. ~~Get approval on tests~~ ✅
+4. ~~Implement Slice 1~~ ✅
+5. ~~Verify and commit~~ ✅
+6. Continue with remaining slices
 
 ---
 
-## Session Summary (January 13, 2026)
+## Session 1 Summary (January 13, 2026)
 
 ### Completed Work
 
@@ -477,18 +477,56 @@ playwright.config.ts                           (modified)
 README.md                                      (modified)
 ```
 
+---
+
+## Session 2 Summary (January 14, 2026)
+
+### Completed Work
+
+1. **Slice 2 (Family Status & MLS Auto-Calculation)** ✅
+   - Implemented Single/Family toggle with conditional UI
+   - Added number of children input (visible only when Family selected)
+   - Real-time MLS rate calculation and display
+   - Tier explanation showing income ranges
+   - Dynamic threshold adjustments based on children count
+   - Tests: 14 new e2e tests passing
+   - Commit: 4321424
+
+### Test Coverage
+
+- **Unit tests:** 31 passing (calculator logic)
+- **E2E tests:** 25 passing (2 POC + 8 Slice 1 + 14 Slice 2 + 1 frontend)
+- **Total:** 56 tests passing
+
+### Files Created/Modified
+
+```
+src/components/HospitalCalculator.tsx                    (modified - added family toggle & MLS display)
+tests/e2e/hospital-calculator-slice2.e2e.spec.ts        (created - 14 tests)
+tests/e2e/frontend.e2e.spec.ts                          (modified - updated for new homepage)
+tests/e2e/hospital-calculator-poc.e2e.spec.ts           (modified - updated POC test)
+```
+
+### Features Delivered
+
+- Single/Family toggle buttons with visual active state
+- Conditional children input (0-10)
+- MLS rate display card with:
+  - Current rate (0%, 1.0%, 1.25%, 1.5%)
+  - Tier level (Tier 0-3)
+  - Income range explanation
+- Real-time dynamic updates
+
 ### Ready for Next Session
 
-**Next task:** Slice 2 - Family Status & MLS Auto-Calculation
+**Next task:** Slice 3 - Loading Calculation (Age-based & Immigrant)
 
 All calculation logic is ready (already implemented in utils):
-- Family vs Single toggle
-- Number of children input
-- MLS rate display with explanation
-- Threshold adjustments
-
-Just need to add UI components and wire them up!
+- Immigrant status checkbox
+- Medicare age input (conditional)
+- Loading display with explanation
+- Grace period calculations
 
 ---
 
-**Last Updated:** January 13, 2026
+**Last Updated:** January 14, 2026

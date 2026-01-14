@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(docker --version:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(pnpm payload:*)",
+      "Bash(pnpm dev)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd development workflow guidelines for AI agents\n\n- Created docs/FOR_AGENTS/MORE_INSTRUCTIONS.md with:\n  * Vertical slicing methodology for visual verification\n  * Test-first development workflow with Playwright\n  * Detailed examples and best practices\n- Updated CLAUDE.md to reference the new workflow guidelines\n- Moved AGENTS.md to docs/FOR_AGENTS/ for better organization\n\nThese guidelines ensure all feature development is:\n1. Split into small, visually verifiable slices\n2. Test-driven with user-approved e2e tests\n3. Incrementally delivered with continuous feedback\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(pnpm exec playwright test:*)",
+      "Bash(tree:*)",
+      "Bash(pnpm test:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

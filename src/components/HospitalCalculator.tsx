@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { calculateDelayCost, calculateMlsRate, formatCurrency, type CalculationResult } from '@/utilities/hospitalCalculator'
+import { calculateDelayCost, calculateMlsRate, calculateCurrentLoading, formatCurrency, type CalculationResult } from '@/utilities/hospitalCalculator'
 
 export function HospitalCalculator() {
   const [age, setAge] = useState<string>('')
@@ -9,6 +9,8 @@ export function HospitalCalculator() {
   const [premium, setPremium] = useState<string>('2000')
   const [isFamily, setIsFamily] = useState<boolean>(false)
   const [numChildren, setNumChildren] = useState<string>('0')
+  const [isImmigrant, setIsImmigrant] = useState<boolean>(false)
+  const [medicareAge, setMedicareAge] = useState<string>('')
   const [result, setResult] = useState<CalculationResult | null>(null)
 
   // Calculate MLS rate and tier info dynamically
@@ -47,6 +49,54 @@ export function HospitalCalculator() {
     }
   }
 
+  // Calculate loading info dynamically
+  const getLoadingInfo = () => {
+    const ageNum = parseInt(age) || 0
+    const medicareAgeNum = parseInt(medicareAge) || undefined
+
+    if (ageNum === 0) {
+      return { loading: 0, explanation: '' }
+    }
+
+    try {
+      const loading = calculateCurrentLoading({
+        age: ageNum,
+        isImmigrant,
+        medicareAge: medicareAgeNum,
+      })
+
+      let explanation = ''
+      if (loading === 0) {
+        if (isImmigrant && medicareAgeNum) {
+          const graceEndAge = medicareAgeNum + 1
+          if (ageNum <= graceEndAge) {
+            explanation = 'Within grace period'
+          } else {
+            explanation = 'No loading yet'
+          }
+        } else if (!isImmigrant && ageNum < 30) {
+          explanation = 'Under base age 30'
+        } else if (ageNum === 30) {
+          explanation = 'At base age 30'
+        }
+      } else {
+        const yearsLate = isImmigrant && medicareAgeNum
+          ? Math.max(0, ageNum - (medicareAgeNum + 1))
+          : Math.max(0, ageNum - 30)
+
+        if (yearsLate === 1) {
+          explanation = `${yearsLate} year past ${isImmigrant ? 'grace period' : 'age 30'}`
+        } else if (yearsLate > 1) {
+          explanation = `${yearsLate} years past ${isImmigrant ? 'grace period' : 'age 30'}`
+        }
+      }
+
+      return { loading, explanation }
+    } catch (error) {
+      return { loading: 0, explanation: '' }
+    }
+  }
+
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -54,8 +104,14 @@ export function HospitalCalculator() {
     const incomeNum = parseInt(income)
     const premiumNum = parseInt(premium)
     const childrenNum = parseInt(numChildren) || 0
+    const medicareAgeNum = isImmigrant ? parseInt(medicareAge) : undefined
 
     if (!ageNum || !incomeNum || !premiumNum) {
+      return
+    }
+
+    // Validate Medicare age for immigrants
+    if (isImmigrant && !medicareAgeNum) {
       return
     }
 
@@ -66,12 +122,15 @@ export function HospitalCalculator() {
       premium: premiumNum,
       delayYears: 1, // Hardcoded to 1 for Slice 1
       isFamily, // Now dynamic based on toggle
-      isImmigrant: false, // Hardcoded to Australian born for Slice 1
+      isImmigrant, // Now dynamic based on checkbox
       numChildren: childrenNum,
+      medicareAge: medicareAgeNum,
     })
 
     setResult(calculationResult)
   }
+
+  const loadingInfo = getLoadingInfo()
 
   const mlsTierInfo = getMlsTierInfo()
   const formatTierRange = (start: number, end: number) => {
@@ -80,20 +139,33 @@ export function HospitalCalculator() {
     }
     return `$${(start / 1000).toFixed(0)}k - $${(end / 1000).toFixed(0)}k`
   }
-  const formatPercentage = (rate: number) => {
+  const formatPercentage = (rate: number, forLoading = false) => {
     if (rate === 0) return '0%'
     const percentage = rate * 100
-    // Format percentages: 1.0%, 1.25%, 1.5%
-    // Always show at least one decimal place
-    if (percentage % 1 === 0) {
-      // Whole number like 1.0 -> show "1.0%"
-      return `${percentage.toFixed(1)}%`
-    } else if ((percentage * 10) % 1 === 0) {
-      // One decimal place like 1.5 -> show "1.5%"
-      return `${percentage.toFixed(1)}%`
+
+    // For loading: show whole numbers without decimals (10%, 24%)
+    // For MLS: show at least one decimal (1.0%, 1.5%, 1.25%)
+    if (forLoading) {
+      // Round to handle floating point precision issues
+      const rounded = Math.round(percentage * 10) / 10
+      if (Math.abs(rounded - Math.round(rounded)) < 0.01) {
+        return `${Math.round(rounded)}%`
+      } else {
+        return `${rounded}%`
+      }
     } else {
-      // Two decimal places like 1.25 -> show "1.25%"
-      return `${percentage.toFixed(2)}%`
+      // MLS rate formatting: 1.0%, 1.25%, 1.5%
+      // Always show at least one decimal place
+      if (percentage % 1 === 0) {
+        // Whole number like 1.0 -> show "1.0%"
+        return `${percentage.toFixed(1)}%`
+      } else if ((percentage * 10) % 1 === 0) {
+        // One decimal place like 1.5 -> show "1.5%"
+        return `${percentage.toFixed(1)}%`
+      } else {
+        // Two decimal places like 1.25 -> show "1.25%"
+        return `${percentage.toFixed(2)}%`
+      }
     }
   }
 
@@ -153,6 +225,42 @@ export function HospitalCalculator() {
           </div>
         )}
 
+        {/* Immigrant Status Checkbox */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="immigrant"
+            data-testid="immigrant-checkbox"
+            checked={isImmigrant}
+            onChange={(e) => setIsImmigrant(e.target.checked)}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="immigrant" className="ml-2 text-sm font-medium">
+            Are you an immigrant?
+          </label>
+        </div>
+
+        {/* Medicare Age (conditional) */}
+        {isImmigrant && (
+          <div>
+            <label htmlFor="medicareAge" className="block text-sm font-medium mb-2">
+              Age When You Got Medicare
+            </label>
+            <input
+              type="number"
+              id="medicareAge"
+              name="medicareAge"
+              value={medicareAge}
+              onChange={(e) => setMedicareAge(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Age when got Medicare"
+              min="18"
+              max="100"
+              required={isImmigrant}
+            />
+          </div>
+        )}
+
         <div>
           <label htmlFor="age" className="block text-sm font-medium mb-2">
             Age
@@ -169,6 +277,20 @@ export function HospitalCalculator() {
             max="100"
             required
           />
+
+          {/* Loading Display */}
+          {age && parseInt(age) > 0 && (
+            <div data-testid="loading-display" className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-md">
+              <div className="text-sm font-medium text-purple-900">
+                Your current loading: <span className="font-bold">{formatPercentage(loadingInfo.loading, true)}</span>
+              </div>
+              {loadingInfo.explanation && (
+                <div className="text-xs text-purple-700 mt-1">
+                  {loadingInfo.explanation}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div>
