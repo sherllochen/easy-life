@@ -142,29 +142,55 @@ When working with Payload CMS collections and features:
 
 ### Test Structure
 
-Tests are located in `tests/e2e/` and follow this pattern:
+**IMPORTANT: Organize tests by PAGE, not by feature slice.**
+
+Tests are located in `tests/e2e/` with **one test file per page**:
+
+```
+tests/e2e/
+├── homepage.e2e.spec.ts           # All tests for homepage
+├── hospital-calculator.e2e.spec.ts # All tests for calculator page
+├── product-detail.e2e.spec.ts      # All tests for product page
+└── checkout.e2e.spec.ts            # All tests for checkout page
+```
+
+**Pattern:**
 
 ```typescript
 import { test, expect } from '@playwright/test'
 
-test.describe('Feature Name', () => {
+/**
+ * Page Name E2E Tests
+ *
+ * This file contains all tests for the [page name] page.
+ * Tests are organized by feature area but kept in one file
+ * since they all test the same page.
+ */
+
+test.describe('Page Name', () => {
   test.beforeEach(async ({ page }) => {
-    // Setup: Navigate to page, login if needed, etc.
+    await page.goto('/page-url')
   })
 
-  test('should do specific thing', async ({ page }) => {
-    // Arrange: Set up test data/state
-
-    // Act: Perform user actions
-
-    // Assert: Verify expected outcomes
+  // Group tests by feature area (slices)
+  test.describe('Feature Area 1', () => {
+    test('should do specific thing', async ({ page }) => {
+      // Test code
+    })
   })
 
-  test('should handle error case', async ({ page }) => {
-    // Test error scenarios
+  test.describe('Feature Area 2', () => {
+    test('should do another thing', async ({ page }) => {
+      // Test code
+    })
   })
 })
 ```
+
+**When implementing slices:**
+- Add new tests to the **same file** for the page
+- Group related tests with `test.describe()`
+- Keep all tests for one page together
 
 ### Example: Review Feature Tests
 
