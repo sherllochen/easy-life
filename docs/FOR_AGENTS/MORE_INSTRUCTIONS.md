@@ -103,17 +103,29 @@ When working with Payload CMS collections and features:
 
 ## 2. Test-First Development with Playwright
 
-**For all new features, write Playwright e2e tests BEFORE implementation.**
+**MANDATORY: For all new features, write Playwright e2e tests BEFORE implementation.**
 
-### Workflow
+### Workflow (MUST FOLLOW EXACTLY)
 
 1. **Understand the feature requirements** with the user
 2. **Write Playwright e2e test(s)** that describe the expected behavior
-3. **Submit tests for review** - Share the test code and ask the user to review
-4. **Wait for approval** - Do NOT start implementation until tests are approved
+   - Create comprehensive tests covering all scenarios
+   - Include happy paths AND edge cases
+   - Use proper data-testid attributes
+3. **Submit tests for user review and approval**
+   - Share the test file with the user
+   - Explain what scenarios are being tested
+   - **STOP HERE - DO NOT PROCEED TO IMPLEMENTATION**
+4. **Wait for explicit user confirmation**
+   - User will review the tests
+   - User will either approve or request changes
+   - Only proceed when user explicitly says "approved" or "go ahead"
 5. **Implement the feature** to make the tests pass
+   - Write minimal code to satisfy the tests
+   - Follow existing patterns and conventions
 6. **Run tests** to verify implementation
-7. **Iterate** if tests fail or requirements change
+7. **Let user verify visually** in the browser
+8. **Iterate** if tests fail or requirements change
 
 ### Why Test-First?
 
@@ -122,6 +134,11 @@ When working with Payload CMS collections and features:
 - ✅ Prevents over-engineering or under-delivering
 - ✅ Provides immediate feedback when implementation is complete
 - ✅ Documents expected behavior for future developers
+- ✅ Reduces wasted effort on wrong implementations
+
+### CRITICAL RULE
+
+**NEVER start implementation before test approval.** If you write tests and immediately start implementing without waiting for user confirmation, you are violating this workflow and may waste time implementing the wrong thing.
 
 ### Test Structure
 
@@ -203,13 +220,15 @@ test.describe('Product Reviews', () => {
 })
 ```
 
-**Then ask for review:**
+**Then ask for review (REQUIRED):**
 > "I've written the e2e tests for the product reviews feature. The tests cover:
 > 1. Displaying existing reviews
 > 2. Submitting a new review
 > 3. Validation for empty reviews
 >
-> Please review the tests and let me know if they align with your requirements before I start implementation."
+> Please review the tests and let me know if they align with your requirements. I will wait for your approval before starting implementation."
+
+**Wait for user to respond with approval before proceeding.**
 
 ### Running Tests
 
@@ -242,15 +261,24 @@ pnpm exec playwright test --headed
 
 1. ✅ Break it down into vertical slices
 2. ✅ Write Playwright tests for the first slice
-3. ✅ Get user approval on tests
-4. ✅ Implement the slice
-5. ✅ Verify tests pass
-6. ✅ Let user verify visually
-7. ✅ Repeat for next slice
+3. ✅ **STOP and submit tests to user for review**
+4. ✅ **WAIT for explicit user approval**
+5. ✅ Implement the slice (only after approval)
+6. ✅ Verify tests pass
+7. ✅ Let user verify visually
+8. ✅ Commit the slice
+9. ✅ Repeat for next slice
 
 **Key Principles:**
 - Make every change visually verifiable
-- Write tests before code
-- Get approval before implementing
+- **Write tests BEFORE code (non-negotiable)**
+- **Get approval BEFORE implementing (non-negotiable)**
 - Keep changes small and incremental
 - Prioritize user feedback over perfection
+
+**Red Flags (What NOT to do):**
+- ❌ Writing tests and implementation together
+- ❌ Starting implementation without test approval
+- ❌ Assuming tests are correct without user review
+- ❌ Implementing multiple slices at once
+- ❌ Skipping visual verification
