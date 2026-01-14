@@ -415,11 +415,11 @@ src/components/
 - ✅ **Slice 1:** Complete - Basic calculator with core formula (1-year delay, single person)
 - ✅ **Refactoring:** Complete - Extracted all calculation logic with 31 unit tests
 - ✅ **Slice 2:** Complete - Family status & MLS auto-calculation
-- ⏳ **Slice 3:** Ready to start - Loading calculation (age-based & immigrant)
-- ⏳ **Slice 4:** Pending
-- ⏳ **Slice 5:** Pending
-- ⏳ **Slice 6:** Pending
-- ⏳ **Slice 7:** Pending
+- ✅ **Slice 3:** Complete - Loading calculation (age-based & immigrant)
+- ✅ **Slice 4:** Complete - Multi-year comparison with cost scenarios
+- ⏳ **Slice 5:** Pending - Detailed formula breakdown
+- ⏳ **Slice 6:** Pending - Decision recommendation & warnings
+- ⏳ **Slice 7:** Pending - Polish & bilingual support
 
 ---
 
@@ -517,16 +517,66 @@ tests/e2e/hospital-calculator-poc.e2e.spec.ts           (modified - updated POC 
   - Income range explanation
 - Real-time dynamic updates
 
+---
+
+## Session 3 Summary (January 15, 2026)
+
+### Completed Work
+
+1. **Slice 4 (Multi-Year Comparison)** ✅
+   - Implemented delay years input (1-10 years, default 1)
+   - Show/Hide comparison table button
+   - Comparison table with 4 scenarios (1, 3, 5, 10 years)
+   - Net cost calculation for each scenario
+   - Recommendations (Buy now / Consider / Can wait)
+   - Best option highlighting (most economical choice)
+   - Dynamic updates based on all current settings
+   - Works with family status and immigrant calculations
+   - Tests: 19 new e2e tests passing
+   - Commit: d6c4fcb
+
+### Bug Fixes
+
+- Fixed property name bug: `result.netAdditionalCost` → `result.netCost`
+  - Was causing "$NaN" display in comparison table
+  - Added improved NaN validation for comparison scenarios
+
+### Test Coverage
+
+- **Unit tests:** 31 passing (calculator logic)
+- **E2E tests:** 61 passing (1 skipped)
+- **Total:** 92 tests passing
+
+### Files Created/Modified
+
+```
+src/components/HospitalCalculator.tsx           (modified - added multi-year comparison)
+tests/e2e/hospital-calculator.e2e.spec.ts       (modified - added 19 Slice 4 tests)
+```
+
+### Features Delivered
+
+- Delay years input with validation (1-10)
+- Toggle comparison table visibility
+- Multi-year cost comparison (1, 3, 5, 10 years)
+- Best option highlighting with green background
+- Dynamic recommendations based on thresholds
+- Currency formatting for all costs
+- Proper handling of negative costs (savings)
+
 ### Ready for Next Session
 
-**Next task:** Slice 3 - Loading Calculation (Age-based & Immigrant)
+**Next task:** Slice 5 - Detailed Formula Breakdown
 
-All calculation logic is ready (already implemented in utils):
-- Immigrant status checkbox
-- Medicare age input (conditional)
-- Loading display with explanation
-- Grace period calculations
+Features to implement:
+- Expandable "Show calculation details" section
+- Display three formula components:
+  1. Loading increase cost: P × X × 0.2
+  2. MLS paid during delay: Income × MLS Rate × X
+  3. Premium saved during delay: -P × (1 + L₀) × X
+- Show step-by-step calculation with actual values
+- Help users understand where numbers come from
 
 ---
 
-**Last Updated:** January 14, 2026
+**Last Updated:** January 15, 2026

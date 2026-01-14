@@ -523,7 +523,7 @@ test.describe('Hospital Calculator', () => {
     test('should display delay years input', async ({ page }) => {
       const delayYearsInput = page.locator('[data-testid="delay-years-input"]')
       await expect(delayYearsInput).toBeVisible()
-      await expect(page.locator('text=/delay.*year/i')).toBeVisible()
+      await expect(page.locator('label[for="delayYears"]')).toBeVisible()
     })
 
     test('should default to 1 year delay', async ({ page }) => {

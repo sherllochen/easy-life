@@ -13,7 +13,9 @@
       "Bash(pnpm exec playwright test:*)",
       "Bash(tree:*)",
       "Bash(pnpm test:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

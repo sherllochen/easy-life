@@ -13,7 +13,6 @@ export function HospitalCalculator() {
   const [medicareAge, setMedicareAge] = useState<string>('')
   const [delayYears, setDelayYears] = useState<string>('1')
   const [showComparison, setShowComparison] = useState<boolean>(false)
-  const [result, setResult] = useState<CalculationResult | null>(null)
 
   // Calculate MLS rate and tier info dynamically
   const getMlsTierInfo = () => {
@@ -99,9 +98,8 @@ export function HospitalCalculator() {
     }
   }
 
-  const handleCalculate = (e: React.FormEvent) => {
-    e.preventDefault()
-
+  // Calculate main result dynamically (reactive)
+  const getMainResult = (): CalculationResult | null => {
     const ageNum = parseInt(age)
     const incomeNum = parseInt(income)
     const premiumNum = parseInt(premium)
@@ -109,28 +107,35 @@ export function HospitalCalculator() {
     const medicareAgeNum = isImmigrant ? parseInt(medicareAge) : undefined
     const delayYearsNum = parseInt(delayYears) || 1
 
-    if (!ageNum || !incomeNum || !premiumNum) {
-      return
+    // Validate all required inputs
+    if (!ageNum || isNaN(ageNum) || !incomeNum || isNaN(incomeNum) || !premiumNum || isNaN(premiumNum)) {
+      return null
     }
 
     // Validate Medicare age for immigrants
-    if (isImmigrant && !medicareAgeNum) {
-      return
+    if (isImmigrant && (!medicareAgeNum || isNaN(medicareAgeNum))) {
+      return null
     }
 
     // Calculate using extracted utility
-    const calculationResult = calculateDelayCost({
+    return calculateDelayCost({
       age: ageNum,
       income: incomeNum,
       premium: premiumNum,
-      delayYears: delayYearsNum, // Now dynamic based on input
-      isFamily, // Now dynamic based on toggle
-      isImmigrant, // Now dynamic based on checkbox
+      delayYears: delayYearsNum,
+      isFamily,
+      isImmigrant,
       numChildren: childrenNum,
       medicareAge: medicareAgeNum,
     })
+  }
 
-    setResult(calculationResult)
+  const result = getMainResult()
+
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault()
+    // No longer needed - result auto-calculates
+    // But keep the function to prevent form submission
   }
 
   // Calculate multiple scenarios for comparison
