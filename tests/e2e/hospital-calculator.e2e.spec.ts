@@ -686,11 +686,7 @@ test.describe('Hospital Calculator', () => {
       await expect(comparisonTable).not.toBeVisible()
     })
 
-    test.skip('should update comparison when inputs change', async ({ page }) => {
-      // NOTE: This test is skipped due to timing issues with React state updates
-      // The feature works correctly - comparison table updates reactively
-      // But the test has timing issues that are hard to reliably test in e2e
-
+    test('should update comparison when inputs change', async ({ page }) => {
       await page.fill('input[name="income"]', '120000')
       await page.click('button:has-text("Calculate")')
       await page.click('[data-testid="show-comparison"]')
@@ -759,6 +755,219 @@ test.describe('Hospital Calculator', () => {
 
       // Comparison should still be visible
       await expect(comparisonTable).toBeVisible()
+    })
+  })
+
+  // ============================================================================
+  // Detailed Formula Breakdown (Slice 5)
+  // ============================================================================
+
+  test.describe('Detailed Formula Breakdown', () => {
+    test.beforeEach(async ({ page }) => {
+      // Fill in basic required fields to show results
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+      // Premium defaults to 2000
+    })
+
+    test('should display show/hide breakdown button', async ({ page }) => {
+      const breakdownButton = page.locator('[data-testid="toggle-breakdown"]')
+      await expect(breakdownButton).toBeVisible()
+      await expect(breakdownButton).toContainText(/show.*detail/i)
+    })
+
+    test('should show breakdown section when button clicked', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+      await expect(breakdownSection).toBeVisible()
+    })
+
+    test('should hide breakdown section when clicked again', async ({ page }) => {
+      // Show first
+      await page.click('[data-testid="toggle-breakdown"]')
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+      await expect(breakdownSection).toBeVisible()
+
+      // Hide
+      await page.click('[data-testid="toggle-breakdown"]')
+      await expect(breakdownSection).not.toBeVisible()
+    })
+
+    test('should update button text when toggling', async ({ page }) => {
+      const breakdownButton = page.locator('[data-testid="toggle-breakdown"]')
+
+      // Initially shows "Show"
+      await expect(breakdownButton).toContainText(/show.*detail/i)
+
+      // After clicking, shows "Hide"
+      await page.click('[data-testid="toggle-breakdown"]')
+      await expect(breakdownButton).toContainText(/hide.*detail/i)
+
+      // After clicking again, back to "Show"
+      await page.click('[data-testid="toggle-breakdown"]')
+      await expect(breakdownButton).toContainText(/show.*detail/i)
+    })
+
+    test('should display all three formula components', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Should show three main components
+      await expect(breakdownSection.locator('text=/loading.*increase/i')).toBeVisible()
+      await expect(breakdownSection.locator('text=/MLS.*paid/i')).toBeVisible()
+      await expect(breakdownSection.locator('text=/premium.*saved/i')).toBeVisible()
+    })
+
+    test('should display loading increase cost formula', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Should show formula: P × X × 0.2
+      await expect(breakdownSection).toContainText(/P.*×.*X.*×.*0\.2/i)
+      await expect(breakdownSection).toContainText('$2,000')
+      await expect(breakdownSection).toContainText('$400') // 2000 × 1 × 0.2
+    })
+
+    test('should display MLS cost formula', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Should show formula: Income × MLS Rate × X
+      await expect(breakdownSection).toContainText(/Income.*×.*MLS/i)
+      await expect(breakdownSection).toContainText('$120,000')
+      await expect(breakdownSection).toContainText('1.25%') // MLS rate for $120k single
+      await expect(breakdownSection).toContainText('$1,500') // 120000 × 0.0125 × 1
+    })
+
+    test('should display premium saved formula', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Should show formula: -P × (1 + L₀) × X
+      await expect(breakdownSection).toContainText(/P.*×.*\(1.*\+.*L/i)
+      await expect(breakdownSection).toContainText('$2,000')
+      await expect(breakdownSection).toContainText('10%') // Loading for age 35 (5 years past 30)
+    })
+
+    test('should display final net cost in breakdown', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Should show final calculation
+      await expect(breakdownSection).toContainText(/net.*cost/i)
+    })
+
+    test('should update breakdown when inputs change', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Initial breakdown shows $120,000 income
+      await expect(breakdownSection).toContainText('$120,000')
+
+      // Change income
+      await page.fill('input[name="income"]', '150000')
+
+      // Breakdown should update to show $150,000
+      await expect(breakdownSection).toContainText('$150,000')
+      await expect(breakdownSection).not.toContainText('$120,000')
+    })
+
+    test('should update breakdown when delay years change', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Change delay years to 3
+      await page.fill('[data-testid="delay-years-input"]', '3')
+
+      // Breakdown should reflect 3 years in calculations
+      // Loading cost: 2000 × 3 × 0.2 = 1200
+      await expect(breakdownSection).toContainText('$1,200')
+
+      // MLS cost: 120000 × 0.0125 × 3 = 4500
+      await expect(breakdownSection).toContainText('$4,500')
+    })
+
+    test('should show correct loading percentage in breakdown', async ({ page }) => {
+      await page.fill('input[name="age"]', '40')
+
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Age 40 = 10 years past 30 = 20% loading
+      await expect(breakdownSection).toContainText('20%')
+    })
+
+    test('should show correct MLS rate in breakdown', async ({ page }) => {
+      await page.fill('input[name="income"]', '100000')
+
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Income $100k single = Tier 1 = 1.0% MLS
+      await expect(breakdownSection).toContainText('1.0%')
+    })
+
+    test('should work with family status', async ({ page }) => {
+      await page.click('[data-testid="family-option"]')
+      await page.fill('input[name="income"]', '200000')
+
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Family with $200k = Tier 1 = 1.0% MLS
+      await expect(breakdownSection).toContainText('1.0%')
+      await expect(breakdownSection).toContainText('$200,000')
+    })
+
+    test('should work with immigrant status', async ({ page }) => {
+      await page.click('[data-testid="immigrant-checkbox"]')
+      await page.fill('input[name="age"]', '42')
+      await page.fill('input[name="medicareAge"]', '39')
+
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Age 42, Medicare at 39 = 2 years past grace period = 4% loading
+      await expect(breakdownSection).toContainText('4%')
+    })
+
+    test('should format all currency values correctly', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+      const text = await breakdownSection.textContent()
+
+      // Should have dollar signs
+      expect(text).toContain('$')
+
+      // Should have properly formatted numbers (commas for thousands)
+      expect(text).toMatch(/\$[\d,]+/)
+    })
+
+    test('should handle negative premium saved correctly', async ({ page }) => {
+      await page.click('[data-testid="toggle-breakdown"]')
+
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+
+      // Premium saved should be shown as negative (it reduces the net cost)
+      await expect(breakdownSection).toContainText(/-\$2,/)
+    })
+
+    test('should show breakdown is optional and not displayed by default', async ({ page }) => {
+      const breakdownSection = page.locator('[data-testid="calculation-breakdown"]')
+      await expect(breakdownSection).not.toBeVisible()
     })
   })
 })

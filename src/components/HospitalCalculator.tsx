@@ -13,6 +13,7 @@ export function HospitalCalculator() {
   const [medicareAge, setMedicareAge] = useState<string>('')
   const [delayYears, setDelayYears] = useState<string>('1')
   const [showComparison, setShowComparison] = useState<boolean>(false)
+  const [showBreakdown, setShowBreakdown] = useState<boolean>(false)
 
   // Calculate MLS rate and tier info dynamically
   const getMlsTierInfo = () => {
@@ -197,6 +198,47 @@ export function HospitalCalculator() {
   const loadingInfo = getLoadingInfo()
 
   const mlsTierInfo = getMlsTierInfo()
+
+  // Calculate breakdown values for detailed formula display
+  const getBreakdownValues = () => {
+    const incomeNum = parseInt(income) || 0
+    const premiumNum = parseInt(premium) || 0
+    const delayYearsNum = parseInt(delayYears) || 1
+
+    // Get current loading percentage
+    const currentLoading = loadingInfo.loading
+
+    // Get MLS rate
+    const mlsRate = mlsTierInfo.rate
+
+    // Calculate each component
+    // Loading Increase Cost: P × X × 0.2 (per year of delay adds 2% loading, multiplied by 10 year factor)
+    const loadingIncreaseCost = premiumNum * delayYearsNum * 0.2
+
+    // MLS Cost: Income × MLS Rate × X (MLS paid during delay years)
+    const mlsCost = incomeNum * mlsRate * delayYearsNum
+
+    // Premium Saved: -P × (1 + L₀) × X (premium not paid during delay, including current loading)
+    const premiumSaved = -premiumNum * (1 + currentLoading) * delayYearsNum
+
+    // Net cost
+    const netCost = loadingIncreaseCost + mlsCost + premiumSaved
+
+    return {
+      premium: premiumNum,
+      income: incomeNum,
+      delayYears: delayYearsNum,
+      currentLoading,
+      mlsRate,
+      loadingIncreaseCost,
+      mlsCost,
+      premiumSaved,
+      netCost,
+    }
+  }
+
+  const breakdownValues = getBreakdownValues()
+
   const formatTierRange = (start: number, end: number) => {
     if (end === Infinity) {
       return `$${(start / 1000).toFixed(0)}k+`
@@ -438,6 +480,15 @@ export function HospitalCalculator() {
           >
             {showComparison ? 'Hide Comparison' : 'Show Comparison'}
           </button>
+
+          <button
+            type="button"
+            data-testid="toggle-breakdown"
+            onClick={() => setShowBreakdown(!showBreakdown)}
+            className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-md hover:bg-purple-700 transition-colors font-medium"
+          >
+            {showBreakdown ? 'Hide Details' : 'Show Details'}
+          </button>
         </div>
       </form>
 
@@ -512,6 +563,69 @@ export function HospitalCalculator() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {showBreakdown && (
+        <div data-testid="calculation-breakdown" className="mt-6 bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+          <h2 className="text-2xl font-semibold mb-4">Calculation Breakdown</h2>
+
+          <div className="space-y-6">
+            {/* Loading Increase Cost */}
+            <div className="p-4 bg-white rounded-md border border-yellow-300">
+              <h3 className="font-semibold text-lg mb-2 text-red-700">1. Loading Increase Cost</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                Extra premium you&apos;ll pay over 10 years due to increased loading from delaying.
+              </p>
+              <div className="font-mono text-sm bg-gray-100 p-2 rounded">
+                P × X × 0.2 = {formatCurrency(breakdownValues.premium)} × {breakdownValues.delayYears} × 0.2
+              </div>
+              <div className="mt-2 text-lg font-bold text-red-600">
+                = {formatCurrency(breakdownValues.loadingIncreaseCost)}
+              </div>
+            </div>
+
+            {/* MLS Cost */}
+            <div className="p-4 bg-white rounded-md border border-yellow-300">
+              <h3 className="font-semibold text-lg mb-2 text-red-700">2. MLS Paid During Delay</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                Medicare Levy Surcharge paid while you don&apos;t have hospital cover.
+              </p>
+              <div className="font-mono text-sm bg-gray-100 p-2 rounded">
+                Income × MLS Rate × X = {formatCurrency(breakdownValues.income)} × {formatPercentage(breakdownValues.mlsRate)} × {breakdownValues.delayYears}
+              </div>
+              <div className="mt-2 text-lg font-bold text-red-600">
+                = {formatCurrency(breakdownValues.mlsCost)}
+              </div>
+            </div>
+
+            {/* Premium Saved */}
+            <div className="p-4 bg-white rounded-md border border-yellow-300">
+              <h3 className="font-semibold text-lg mb-2 text-green-700">3. Premium Saved During Delay</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                Premium you don&apos;t pay while delaying (including your current loading).
+              </p>
+              <div className="font-mono text-sm bg-gray-100 p-2 rounded">
+                -P × (1 + L₀) × X = -{formatCurrency(breakdownValues.premium)} × (1 + {formatPercentage(breakdownValues.currentLoading, true)}) × {breakdownValues.delayYears}
+              </div>
+              <div className="mt-2 text-lg font-bold text-green-600">
+                = -{formatCurrency(Math.abs(breakdownValues.premiumSaved))}
+              </div>
+            </div>
+
+            {/* Net Cost */}
+            <div className="p-4 bg-gray-100 rounded-md border-2 border-gray-400">
+              <h3 className="font-semibold text-lg mb-2">Net Cost of Delaying</h3>
+              <div className="font-mono text-sm mb-2">
+                {formatCurrency(breakdownValues.loadingIncreaseCost)} + {formatCurrency(breakdownValues.mlsCost)} + (-{formatCurrency(Math.abs(breakdownValues.premiumSaved))})
+              </div>
+              <div className={`text-2xl font-bold ${breakdownValues.netCost < 0 ? 'text-green-600' : breakdownValues.netCost > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                = {breakdownValues.netCost < 0 ? '-' : ''}{formatCurrency(Math.abs(breakdownValues.netCost))}
+                {breakdownValues.netCost < 0 && <span className="text-sm font-normal ml-2">(you save money by delaying)</span>}
+                {breakdownValues.netCost > 0 && <span className="text-sm font-normal ml-2">(delaying costs you more)</span>}
+              </div>
+            </div>
           </div>
         </div>
       )}
