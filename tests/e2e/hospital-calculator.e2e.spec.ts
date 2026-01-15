@@ -1248,7 +1248,8 @@ test.describe('Hospital Calculator', () => {
 
     test('should default to English', async ({ page }) => {
       const languageToggle = page.locator('[data-testid="language-toggle"]')
-      await expect(languageToggle).toContainText('EN')
+      // Button shows "中文" to indicate clicking will switch to Chinese
+      await expect(languageToggle).toContainText('中文')
 
       // Page should be in English
       await expect(page.locator('h1')).toContainText('Hospital Insurance Calculator')
@@ -1257,9 +1258,9 @@ test.describe('Hospital Calculator', () => {
     test('should switch to Chinese when clicked', async ({ page }) => {
       await page.click('[data-testid="language-toggle"]')
 
-      // Should show Chinese option is active
+      // Button shows "EN" to indicate clicking will switch back to English
       const languageToggle = page.locator('[data-testid="language-toggle"]')
-      await expect(languageToggle).toContainText('中文')
+      await expect(languageToggle).toContainText('EN')
 
       // Page heading should be in Chinese
       await expect(page.locator('h1')).toContainText('医院保险计算器')

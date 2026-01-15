@@ -506,7 +506,7 @@ export function HospitalCalculator() {
             onClick={(e) => { e.stopPropagation(); toggleLanguage(); }}
             className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300 transition-colors font-medium"
           >
-            {language === 'en' ? 'EN' : '中文'}
+            {language === 'en' ? '中文' : 'EN'}
           </button>
           <button
             type="button"
