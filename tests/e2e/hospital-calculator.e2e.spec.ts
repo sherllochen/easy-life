@@ -518,6 +518,8 @@ test.describe('Hospital Calculator', () => {
       await page.fill('input[name="age"]', '35')
       await page.fill('input[name="income"]', '120000')
       // Premium defaults to 2000
+      // Click Calculate to enable comparison/details buttons
+      await page.click('button:has-text("Calculate")')
     })
 
     test('should display delay years input', async ({ page }) => {
@@ -768,6 +770,8 @@ test.describe('Hospital Calculator', () => {
       await page.fill('input[name="age"]', '35')
       await page.fill('input[name="income"]', '120000')
       // Premium defaults to 2000
+      // Click Calculate to enable comparison/details buttons
+      await page.click('button:has-text("Calculate")')
     })
 
     test('should display show/hide breakdown button', async ({ page }) => {
@@ -981,6 +985,8 @@ test.describe('Hospital Calculator', () => {
       await page.fill('input[name="age"]', '35')
       await page.fill('input[name="income"]', '120000')
       // Premium defaults to 2000
+      // Click Calculate to show results and enable buttons
+      await page.click('button:has-text("Calculate")')
     })
 
     // -------------------------------------------------------------------------
