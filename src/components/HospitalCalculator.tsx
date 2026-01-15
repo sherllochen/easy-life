@@ -177,7 +177,6 @@ export function HospitalCalculator() {
   const [delayYears, setDelayYears] = useState<string>('1')
   const [showComparison, setShowComparison] = useState<boolean>(false)
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false)
-  const [hasCalculated, setHasCalculated] = useState<boolean>(false)
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
   const [shareFeedback, setShareFeedback] = useState<boolean>(false)
 
@@ -198,7 +197,6 @@ export function HospitalCalculator() {
     setDelayYears('1')
     setShowComparison(false)
     setShowBreakdown(false)
-    setHasCalculated(false)
   }
 
   const handleShare = async () => {
@@ -356,10 +354,7 @@ export function HospitalCalculator() {
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault()
-    // Set hasCalculated to true to show comparison/details buttons
-    if (result) {
-      setHasCalculated(true)
-    }
+    // Result is computed automatically when inputs are valid
   }
 
   // Calculate multiple scenarios for comparison
@@ -773,7 +768,7 @@ export function HospitalCalculator() {
             {t.calculate}
           </button>
 
-          {hasCalculated && (
+          {result && (
             <>
               <button
                 type="button"
