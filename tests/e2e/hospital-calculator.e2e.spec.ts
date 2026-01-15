@@ -1231,4 +1231,239 @@ test.describe('Hospital Calculator', () => {
       await expect(disclaimer).toContainText(/\$/)
     })
   })
+
+  // ============================================================================
+  // Polish & Bilingual Support (Slice 7)
+  // ============================================================================
+
+  test.describe('Polish & Bilingual Support', () => {
+    // -------------------------------------------------------------------------
+    // Language Toggle
+    // -------------------------------------------------------------------------
+
+    test('should display language toggle', async ({ page }) => {
+      const languageToggle = page.locator('[data-testid="language-toggle"]')
+      await expect(languageToggle).toBeVisible()
+    })
+
+    test('should default to English', async ({ page }) => {
+      const languageToggle = page.locator('[data-testid="language-toggle"]')
+      await expect(languageToggle).toContainText('EN')
+
+      // Page should be in English
+      await expect(page.locator('h1')).toContainText('Hospital Insurance Calculator')
+    })
+
+    test('should switch to Chinese when clicked', async ({ page }) => {
+      await page.click('[data-testid="language-toggle"]')
+
+      // Should show Chinese option is active
+      const languageToggle = page.locator('[data-testid="language-toggle"]')
+      await expect(languageToggle).toContainText('中文')
+
+      // Page heading should be in Chinese
+      await expect(page.locator('h1')).toContainText('医院保险计算器')
+    })
+
+    test('should switch back to English when clicked again', async ({ page }) => {
+      // Switch to Chinese
+      await page.click('[data-testid="language-toggle"]')
+      await expect(page.locator('h1')).toContainText('医院保险计算器')
+
+      // Switch back to English
+      await page.click('[data-testid="language-toggle"]')
+      await expect(page.locator('h1')).toContainText('Hospital Insurance Calculator')
+    })
+
+    test('should translate form labels to Chinese', async ({ page }) => {
+      await page.click('[data-testid="language-toggle"]')
+
+      // Check form labels are translated
+      await expect(page.locator('label', { hasText: /年龄/i })).toBeVisible()
+      await expect(page.locator('label', { hasText: /年收入/i })).toBeVisible()
+      await expect(page.locator('label', { hasText: /保费/i })).toBeVisible()
+    })
+
+    test('should translate recommendation box to Chinese', async ({ page }) => {
+      await page.fill('input[name="age"]', '40')
+      await page.fill('input[name="income"]', '80000')
+
+      await page.click('[data-testid="language-toggle"]')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      // Should contain Chinese text
+      await expect(recommendationBox).toContainText(/可以等待|考虑|建议购买/i)
+    })
+
+    test('should translate age warnings to Chinese', async ({ page }) => {
+      await page.fill('input[name="age"]', '28')
+
+      await page.click('[data-testid="language-toggle"]')
+
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+      await expect(ageWarning).toContainText(/30岁/i)
+    })
+
+    test('should preserve form values when switching language', async ({ page }) => {
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+
+      // Switch to Chinese
+      await page.click('[data-testid="language-toggle"]')
+
+      // Values should be preserved
+      await expect(page.locator('input[name="age"]')).toHaveValue('35')
+      await expect(page.locator('input[name="income"]')).toHaveValue('120000')
+    })
+
+    // -------------------------------------------------------------------------
+    // Help Tooltips
+    // -------------------------------------------------------------------------
+
+    test('should display help icon next to MLS label', async ({ page }) => {
+      const mlsHelpIcon = page.locator('[data-testid="help-mls"]')
+      await expect(mlsHelpIcon).toBeVisible()
+    })
+
+    test('should display help icon next to Loading label', async ({ page }) => {
+      const loadingHelpIcon = page.locator('[data-testid="help-loading"]')
+      await expect(loadingHelpIcon).toBeVisible()
+    })
+
+    test('should show tooltip when MLS help icon is clicked', async ({ page }) => {
+      await page.click('[data-testid="help-mls"]')
+
+      const tooltip = page.locator('[data-testid="tooltip-content"]')
+      await expect(tooltip).toBeVisible()
+      await expect(tooltip).toContainText(/Medicare Levy Surcharge/i)
+    })
+
+    test('should show tooltip when Loading help icon is clicked', async ({ page }) => {
+      await page.click('[data-testid="help-loading"]')
+
+      const tooltip = page.locator('[data-testid="tooltip-content"]')
+      await expect(tooltip).toBeVisible()
+      await expect(tooltip).toContainText(/Lifetime Health Cover/i)
+    })
+
+    test('should hide tooltip when clicking elsewhere', async ({ page }) => {
+      await page.click('[data-testid="help-mls"]')
+      const tooltip = page.locator('[data-testid="tooltip-content"]')
+      await expect(tooltip).toBeVisible()
+
+      // Click elsewhere
+      await page.click('h1')
+      await expect(tooltip).not.toBeVisible()
+    })
+
+    // -------------------------------------------------------------------------
+    // Action Buttons
+    // -------------------------------------------------------------------------
+
+    test('should display reset button', async ({ page }) => {
+      const resetButton = page.locator('[data-testid="reset-button"]')
+      await expect(resetButton).toBeVisible()
+    })
+
+    test('should display share button', async ({ page }) => {
+      const shareButton = page.locator('[data-testid="share-button"]')
+      await expect(shareButton).toBeVisible()
+    })
+
+    test('should display print button', async ({ page }) => {
+      const printButton = page.locator('[data-testid="print-button"]')
+      await expect(printButton).toBeVisible()
+    })
+
+    test('should reset all form values when reset is clicked', async ({ page }) => {
+      // Fill in form
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+      await page.fill('input[name="premium"]', '3000')
+      await page.click('[data-testid="family-option"]')
+
+      // Click reset
+      await page.click('[data-testid="reset-button"]')
+
+      // All values should be reset to defaults
+      await expect(page.locator('input[name="age"]')).toHaveValue('')
+      await expect(page.locator('input[name="income"]')).toHaveValue('')
+      await expect(page.locator('input[name="premium"]')).toHaveValue('2000')
+    })
+
+    test('should copy URL to clipboard when share is clicked', async ({ page, context }) => {
+      // Grant clipboard permissions
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+
+      await page.click('[data-testid="share-button"]')
+
+      // Should show success feedback
+      const feedback = page.locator('[data-testid="share-feedback"]')
+      await expect(feedback).toBeVisible()
+      await expect(feedback).toContainText(/copied/i)
+    })
+
+    // -------------------------------------------------------------------------
+    // Responsive Design
+    // -------------------------------------------------------------------------
+
+    test('should display properly on mobile viewport', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 })
+
+      // Form should still be visible and functional
+      await expect(page.locator('h1')).toBeVisible()
+      await expect(page.locator('input[name="age"]')).toBeVisible()
+      await expect(page.locator('input[name="income"]')).toBeVisible()
+
+      // Buttons should stack on mobile
+      const buttonContainer = page.locator('[data-testid="action-buttons"]')
+      await expect(buttonContainer).toBeVisible()
+    })
+
+    test('should display properly on tablet viewport', async ({ page }) => {
+      await page.setViewportSize({ width: 768, height: 1024 })
+
+      await expect(page.locator('h1')).toBeVisible()
+      await expect(page.locator('input[name="age"]')).toBeVisible()
+    })
+
+    test('should display properly on desktop viewport', async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 })
+
+      await expect(page.locator('h1')).toBeVisible()
+      await expect(page.locator('input[name="age"]')).toBeVisible()
+    })
+
+    test('should maintain functionality on mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 667 })
+
+      // Fill form and verify calculation works
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+
+      const result = page.locator('[data-testid="calculator-result"]')
+      await expect(result).toBeVisible()
+    })
+
+    // -------------------------------------------------------------------------
+    // Accessibility
+    // -------------------------------------------------------------------------
+
+    test('should have proper page title', async ({ page }) => {
+      await expect(page).toHaveTitle(/Hospital Insurance Calculator/i)
+    })
+
+    test('should have visible focus indicators', async ({ page }) => {
+      // Tab to first input
+      await page.keyboard.press('Tab')
+      await page.keyboard.press('Tab')
+
+      // The focused element should have visible styling
+      const activeElement = page.locator(':focus')
+      await expect(activeElement).toBeVisible()
+    })
+  })
 })
