@@ -15,7 +15,8 @@
       "Bash(pnpm test:*)",
       "Bash(git commit:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(pnpm test:e2e:*)"
     ]
   }
 }

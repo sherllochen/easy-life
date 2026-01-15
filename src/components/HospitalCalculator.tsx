@@ -67,6 +67,15 @@ const translations = {
     considerShort: 'Consider',
     buyNowShort: 'Buy now',
     breakdownTitle: 'Calculation Breakdown',
+    glossaryTitle: 'Terms Used in Formulas',
+    glossaryP: 'P = Annual Premium',
+    glossaryPDesc: 'Your base hospital insurance premium per year',
+    glossaryX: 'X = Delay Years',
+    glossaryXDesc: 'Number of years you\'re considering delaying purchase',
+    glossaryL0: 'L₀ = Current Loading',
+    glossaryL0Desc: 'Your current LHC loading percentage based on age',
+    glossaryMLS: 'MLS Rate = Medicare Levy Surcharge Rate',
+    glossaryMLSDesc: 'Tax rate based on your income (0% to 1.5%)',
     loadingIncreaseCost: 'Loading Increase Cost',
     loadingIncreaseCostDesc: 'Extra premium you\'ll pay over 10 years due to increased loading from delaying.',
     mlsPaidDuring: 'MLS Paid During Delay',
@@ -145,6 +154,15 @@ const translations = {
     considerShort: '考虑',
     buyNowShort: '立即购买',
     breakdownTitle: '计算明细',
+    glossaryTitle: '公式术语说明',
+    glossaryP: 'P = 年度保费',
+    glossaryPDesc: '您每年的基本医院保险保费',
+    glossaryX: 'X = 延迟年数',
+    glossaryXDesc: '您考虑延迟购买的年数',
+    glossaryL0: 'L₀ = 当前加载',
+    glossaryL0Desc: '您基于年龄的当前LHC加载百分比',
+    glossaryMLS: 'MLS税率 = Medicare附加税率',
+    glossaryMLSDesc: '基于您收入的税率（0%至1.5%）',
     loadingIncreaseCost: '加载增加费用',
     loadingIncreaseCostDesc: '由于延迟导致加载增加，您在10年内将额外支付的保费。',
     mlsPaidDuring: '延迟期间支付的MLS',
@@ -982,6 +1000,29 @@ export function HospitalCalculator() {
       {showBreakdown && (
         <div ref={breakdownRef} data-testid="calculation-breakdown" className="mt-6 bg-yellow-50 p-6 rounded-lg border border-yellow-200">
           <h2 className="text-2xl font-semibold mb-4">{t.breakdownTitle}</h2>
+
+          {/* Glossary of Terms */}
+          <div data-testid="formula-glossary" className="mb-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+            <h3 className="font-semibold text-sm text-blue-800 mb-3">{t.glossaryTitle}</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div>
+                <span className="font-mono font-semibold text-blue-700">{t.glossaryP}</span>
+                <span className="text-gray-600 ml-2">— {t.glossaryPDesc}</span>
+              </div>
+              <div>
+                <span className="font-mono font-semibold text-blue-700">{t.glossaryX}</span>
+                <span className="text-gray-600 ml-2">— {t.glossaryXDesc}</span>
+              </div>
+              <div>
+                <span className="font-mono font-semibold text-blue-700">{t.glossaryL0}</span>
+                <span className="text-gray-600 ml-2">— {t.glossaryL0Desc}</span>
+              </div>
+              <div>
+                <span className="font-mono font-semibold text-blue-700">{t.glossaryMLS}</span>
+                <span className="text-gray-600 ml-2">— {t.glossaryMLSDesc}</span>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-6">
             {/* Loading Increase Cost */}
