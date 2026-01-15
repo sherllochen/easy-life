@@ -11,10 +11,10 @@ test.describe('Frontend', () => {
   test('can go on homepage', async ({ page }) => {
     await page.goto('http://localhost:3000')
 
-    await expect(page).toHaveTitle(/Hospital Insurance Calculator/)
+    await expect(page).toHaveTitle(/Should I Buy Hospital Cover Now/)
 
     const heading = page.locator('h1').first()
 
-    await expect(heading).toHaveText('Hospital Insurance Calculator')
+    await expect(heading).toHaveText('Should I Buy Hospital Cover Now?')
   })
 })

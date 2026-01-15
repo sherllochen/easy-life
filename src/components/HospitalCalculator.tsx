@@ -6,7 +6,8 @@ import { calculateDelayCost, calculateMlsRate, calculateCurrentLoading, formatCu
 // Translations
 const translations = {
   en: {
-    title: 'Hospital Insurance Calculator',
+    title: 'Should I Buy Hospital Cover Now?',
+    subtitle: 'Find out if delaying private health insurance makes financial sense for you',
     status: 'Status',
     single: 'Single',
     family: 'Family',
@@ -93,7 +94,8 @@ const translations = {
     loadingTooltip: 'Lifetime Health Cover (LHC) loading is an extra charge added to your premium if you don\'t take out hospital cover before age 31.',
   },
   zh: {
-    title: '医院保险计算器',
+    title: '我现在应该买医院保险吗？',
+    subtitle: '计算延迟购买私人医疗保险是否对您经济上更划算',
     status: '状态',
     single: '单身',
     family: '家庭',
@@ -517,7 +519,7 @@ export function HospitalCalculator() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl" onClick={closeTooltip}>
       {/* Header with Language Toggle and Action Buttons */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <h1 className="text-3xl sm:text-4xl font-bold">{t.title}</h1>
         <div className="flex items-center gap-2" data-testid="action-buttons">
           <button
@@ -559,6 +561,9 @@ export function HospitalCalculator() {
           </button>
         </div>
       </div>
+
+      {/* Subtitle */}
+      <p className="text-gray-600 mb-6" data-testid="subtitle">{t.subtitle}</p>
 
       {/* Help Icons for MLS and Loading */}
       <div className="flex gap-4 mb-6 text-sm">

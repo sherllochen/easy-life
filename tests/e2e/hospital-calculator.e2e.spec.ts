@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 /**
- * Hospital Insurance Calculator E2E Tests
+ * Should I Buy Hospital Cover Now? E2E Tests
  *
  * This file contains all tests for the hospital calculator page.
  * Tests are organized by feature area (slices) but kept in one file
@@ -20,7 +20,7 @@ test.describe('Hospital Calculator', () => {
   test.describe('Basic Calculator', () => {
     test('should display calculator form with required inputs', async ({ page }) => {
       // Should see form heading
-      await expect(page.locator('h1', { hasText: 'Hospital Insurance Calculator' })).toBeVisible()
+      await expect(page.locator('h1', { hasText: 'Should I Buy Hospital Cover Now?' })).toBeVisible()
 
       // Should see Age input
       const ageInput = page.locator('input[name="age"]')
@@ -1258,7 +1258,7 @@ test.describe('Hospital Calculator', () => {
       await expect(languageToggle).toContainText('中文')
 
       // Page should be in English
-      await expect(page.locator('h1')).toContainText('Hospital Insurance Calculator')
+      await expect(page.locator('h1')).toContainText('Should I Buy Hospital Cover Now?')
     })
 
     test('should switch to Chinese when clicked', async ({ page }) => {
@@ -1269,17 +1269,17 @@ test.describe('Hospital Calculator', () => {
       await expect(languageToggle).toContainText('EN')
 
       // Page heading should be in Chinese
-      await expect(page.locator('h1')).toContainText('医院保险计算器')
+      await expect(page.locator('h1')).toContainText('我现在应该买医院保险吗？')
     })
 
     test('should switch back to English when clicked again', async ({ page }) => {
       // Switch to Chinese
       await page.click('[data-testid="language-toggle"]')
-      await expect(page.locator('h1')).toContainText('医院保险计算器')
+      await expect(page.locator('h1')).toContainText('我现在应该买医院保险吗？')
 
       // Switch back to English
       await page.click('[data-testid="language-toggle"]')
-      await expect(page.locator('h1')).toContainText('Hospital Insurance Calculator')
+      await expect(page.locator('h1')).toContainText('Should I Buy Hospital Cover Now?')
     })
 
     test('should translate form labels to Chinese', async ({ page }) => {
@@ -1460,7 +1460,7 @@ test.describe('Hospital Calculator', () => {
     // -------------------------------------------------------------------------
 
     test('should have proper page title', async ({ page }) => {
-      await expect(page).toHaveTitle(/Hospital Insurance Calculator/i)
+      await expect(page).toHaveTitle(/Should I Buy Hospital Cover Now?/i)
     })
 
     test('should have visible focus indicators', async ({ page }) => {
