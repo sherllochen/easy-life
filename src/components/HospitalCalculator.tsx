@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { calculateDelayCost, calculateMlsRate, calculateCurrentLoading, formatCurrency, type CalculationResult } from '@/utilities/hospitalCalculator'
 
 // Translations
@@ -178,6 +178,9 @@ export function HospitalCalculator() {
   const [showComparison, setShowComparison] = useState<boolean>(false)
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false)
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
+
+  const comparisonRef = useRef<HTMLDivElement>(null)
+  const breakdownRef = useRef<HTMLDivElement>(null)
   const [shareFeedback, setShareFeedback] = useState<boolean>(false)
 
   const t = translations[language]
@@ -773,7 +776,15 @@ export function HospitalCalculator() {
               <button
                 type="button"
                 data-testid={showComparison ? 'hide-comparison' : 'show-comparison'}
-                onClick={() => setShowComparison(!showComparison)}
+                onClick={() => {
+                  const willShow = !showComparison
+                  setShowComparison(willShow)
+                  if (willShow) {
+                    setTimeout(() => {
+                      comparisonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }, 100)
+                  }
+                }}
                 className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 transition-colors font-medium"
               >
                 {showComparison ? t.hideComparison : t.showComparison}
@@ -782,7 +793,15 @@ export function HospitalCalculator() {
               <button
                 type="button"
                 data-testid="toggle-breakdown"
-                onClick={() => setShowBreakdown(!showBreakdown)}
+                onClick={() => {
+                  const willShow = !showBreakdown
+                  setShowBreakdown(willShow)
+                  if (willShow) {
+                    setTimeout(() => {
+                      breakdownRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }, 100)
+                  }
+                }}
                 className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-md hover:bg-purple-700 transition-colors font-medium"
               >
                 {showBreakdown ? t.hideDetails : t.showDetails}
@@ -916,7 +935,7 @@ export function HospitalCalculator() {
       )}
 
       {showComparison && comparisonScenarios.length > 0 && (
-        <div data-testid="comparison-table" className="mt-6 bg-white p-6 rounded-lg border border-gray-200">
+        <div ref={comparisonRef} data-testid="comparison-table" className="mt-6 bg-white p-6 rounded-lg border border-gray-200">
           <h2 className="text-2xl font-semibold mb-4">{t.multiYearComparison}</h2>
 
           <div className="overflow-x-auto">
@@ -961,7 +980,7 @@ export function HospitalCalculator() {
       )}
 
       {showBreakdown && (
-        <div data-testid="calculation-breakdown" className="mt-6 bg-yellow-50 p-6 rounded-lg border border-yellow-200">
+        <div ref={breakdownRef} data-testid="calculation-breakdown" className="mt-6 bg-yellow-50 p-6 rounded-lg border border-yellow-200">
           <h2 className="text-2xl font-semibold mb-4">{t.breakdownTitle}</h2>
 
           <div className="space-y-6">
