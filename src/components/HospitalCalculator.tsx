@@ -177,6 +177,7 @@ export function HospitalCalculator() {
   const [delayYears, setDelayYears] = useState<string>('1')
   const [showComparison, setShowComparison] = useState<boolean>(false)
   const [showBreakdown, setShowBreakdown] = useState<boolean>(false)
+  const [hasCalculated, setHasCalculated] = useState<boolean>(false)
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null)
   const [shareFeedback, setShareFeedback] = useState<boolean>(false)
 
@@ -197,6 +198,7 @@ export function HospitalCalculator() {
     setDelayYears('1')
     setShowComparison(false)
     setShowBreakdown(false)
+    setHasCalculated(false)
   }
 
   const handleShare = async () => {
@@ -354,8 +356,10 @@ export function HospitalCalculator() {
 
   const handleCalculate = (e: React.FormEvent) => {
     e.preventDefault()
-    // No longer needed - result auto-calculates
-    // But keep the function to prevent form submission
+    // Set hasCalculated to true to show comparison/details buttons
+    if (result) {
+      setHasCalculated(true)
+    }
   }
 
   // Calculate multiple scenarios for comparison
@@ -769,23 +773,27 @@ export function HospitalCalculator() {
             {t.calculate}
           </button>
 
-          <button
-            type="button"
-            data-testid={showComparison ? 'hide-comparison' : 'show-comparison'}
-            onClick={() => setShowComparison(!showComparison)}
-            className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 transition-colors font-medium"
-          >
-            {showComparison ? t.hideComparison : t.showComparison}
-          </button>
+          {hasCalculated && (
+            <>
+              <button
+                type="button"
+                data-testid={showComparison ? 'hide-comparison' : 'show-comparison'}
+                onClick={() => setShowComparison(!showComparison)}
+                className="flex-1 bg-gray-600 text-white py-3 px-6 rounded-md hover:bg-gray-700 transition-colors font-medium"
+              >
+                {showComparison ? t.hideComparison : t.showComparison}
+              </button>
 
-          <button
-            type="button"
-            data-testid="toggle-breakdown"
-            onClick={() => setShowBreakdown(!showBreakdown)}
-            className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-md hover:bg-purple-700 transition-colors font-medium"
-          >
-            {showBreakdown ? t.hideDetails : t.showDetails}
-          </button>
+              <button
+                type="button"
+                data-testid="toggle-breakdown"
+                onClick={() => setShowBreakdown(!showBreakdown)}
+                className="flex-1 bg-purple-600 text-white py-3 px-6 rounded-md hover:bg-purple-700 transition-colors font-medium"
+              >
+                {showBreakdown ? t.hideDetails : t.showDetails}
+              </button>
+            </>
+          )}
         </div>
       </form>
 
