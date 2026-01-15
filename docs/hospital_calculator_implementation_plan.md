@@ -418,7 +418,7 @@ src/components/
 - ✅ **Slice 3:** Complete - Loading calculation (age-based & immigrant)
 - ✅ **Slice 4:** Complete - Multi-year comparison with cost scenarios
 - ✅ **Slice 5:** Complete - Detailed formula breakdown
-- ⏳ **Slice 6:** Pending - Decision recommendation & warnings
+- ✅ **Slice 6:** Complete - Decision recommendation & warnings
 - ⏳ **Slice 7:** Pending - Polish & bilingual support
 
 ---
@@ -577,17 +577,35 @@ tests/e2e/hospital-calculator.e2e.spec.ts       (modified - added 19 Slice 4 tes
    - Tests: 18 new e2e tests passing
    - Commit: 9602d68
 
+### Slice 6 Completed
+
+3. **Slice 6 (Decision Recommendation & Warnings)** ✅
+   - Implemented colored recommendation box:
+     - Blue: "Economically Can Wait" (saves money)
+     - Yellow: "Consider Your Options" ($0-$3,000 cost)
+     - Green: "Recommend Buying Now" (>$3,000 cost)
+   - Age-based warnings (<30, 30-40, 40+)
+   - Risk factors display (MLS cost, loading increase, waiting periods)
+   - Medical cost disclaimer with surgery examples
+   - Tests: 22 new e2e tests passing
+   - Commit: 3500189
+
+### Test Coverage Summary
+
+- **Unit tests:** 31 passing (calculator logic)
+- **E2E tests:** 102 passing (1 skipped)
+- **Total:** 133 tests
+
 ### Ready for Next Session
 
-**Next task:** Slice 6 - Decision Recommendation & Warnings
+**Next task:** Slice 7 - Polish & Bilingual Support
 
 Features to implement:
-- Colored recommendation box at top of results:
-  - 🟢 Green: "Recommend buying now" (cost > $3,000)
-  - 🟡 Yellow: "Can wait, but consider risks" (cost $0-$3,000)
-  - 🔵 Blue: "Economically can wait" (saves money)
-- Age-based warnings
-- Risk factors highlighted (MLS cost, loading increase)
+- Language toggle (EN / 中文)
+- Responsive design (mobile/tablet/desktop)
+- Professional styling with shadcn/ui
+- Help tooltips
+- Print/Share/Reset buttons
 
 ---
 
