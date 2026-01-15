@@ -970,4 +970,265 @@ test.describe('Hospital Calculator', () => {
       await expect(breakdownSection).not.toBeVisible()
     })
   })
+
+  // ============================================================================
+  // Decision Recommendation & Warnings (Slice 6)
+  // ============================================================================
+
+  test.describe('Decision Recommendation & Warnings', () => {
+    test.beforeEach(async ({ page }) => {
+      // Fill in basic required fields
+      await page.fill('input[name="age"]', '35')
+      await page.fill('input[name="income"]', '120000')
+      // Premium defaults to 2000
+    })
+
+    // -------------------------------------------------------------------------
+    // Recommendation Box
+    // -------------------------------------------------------------------------
+
+    test('should display recommendation box', async ({ page }) => {
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+    })
+
+    test('should show blue recommendation when delaying saves money', async ({ page }) => {
+      // Older person with low income - high premium savings outweighs MLS
+      // Age 40 = 20% loading, so premium saved = $2000 × 1.2 = $2,400/year
+      // Income $80k = 0% MLS, so no MLS cost
+      // Loading increase = $2000 × 1 × 0.2 = $400
+      // Net = $400 - $2,400 = -$2,000 (saves money)
+      await page.fill('input[name="age"]', '40')
+      await page.fill('input[name="income"]', '80000')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'can-wait')
+      await expect(recommendationBox).toContainText(/can wait/i)
+    })
+
+    test('should show yellow recommendation for moderate cost (0-3000)', async ({ page }) => {
+      // Young person with moderate income - small positive cost
+      // Age 28 = 0% loading, so premium saved = $2000/year
+      // Income $150k = 1.25% MLS = $1,875/year
+      // Loading increase = $2000 × 1 × 0.2 = $400
+      // Net = $400 + $1,875 - $2,000 = $275 (small cost, "consider")
+      await page.fill('input[name="age"]', '28')
+      await page.fill('input[name="income"]', '150000')
+      await page.fill('[data-testid="delay-years-input"]', '1')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'consider')
+      await expect(recommendationBox).toContainText(/consider/i)
+    })
+
+    test('should show green recommendation when cost exceeds $3000', async ({ page }) => {
+      // Young person with very high income and long delay - high cost
+      // Age 28 = 0% loading, so premium saved = $2000 × 5 = $10,000
+      // Income $200k = 1.5% MLS = $3,000/year × 5 = $15,000
+      // Loading increase = $2000 × 5 × 0.2 = $2,000
+      // Net = $2,000 + $15,000 - $10,000 = $7,000 (high cost, "buy now")
+      await page.fill('input[name="age"]', '28')
+      await page.fill('input[name="income"]', '200000')
+      await page.fill('[data-testid="delay-years-input"]', '5')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'buy-now')
+      await expect(recommendationBox).toContainText(/buy now/i)
+    })
+
+    test('should update recommendation when inputs change', async ({ page }) => {
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+
+      // Start with older person, low income - can wait (saves money)
+      await page.fill('input[name="age"]', '40')
+      await page.fill('input[name="income"]', '80000')
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'can-wait')
+
+      // Change to young person with very high income and long delay - buy now
+      await page.fill('input[name="age"]', '28')
+      await page.fill('input[name="income"]', '200000')
+      await page.fill('[data-testid="delay-years-input"]', '5')
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'buy-now')
+    })
+
+    // -------------------------------------------------------------------------
+    // Age-based Warnings
+    // -------------------------------------------------------------------------
+
+    test('should display age warning section', async ({ page }) => {
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+      await expect(ageWarning).toBeVisible()
+    })
+
+    test('should show warning to buy before 30 for young users', async ({ page }) => {
+      await page.fill('input[name="age"]', '28')
+
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+      await expect(ageWarning).toBeVisible()
+      await expect(ageWarning).toContainText(/before.*30/i)
+      await expect(ageWarning).toContainText(/loading/i)
+    })
+
+    test('should show health consideration for ages 30-40', async ({ page }) => {
+      await page.fill('input[name="age"]', '35')
+
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+      await expect(ageWarning).toBeVisible()
+      await expect(ageWarning).toContainText(/health/i)
+    })
+
+    test('should show health risk warning for ages 40+', async ({ page }) => {
+      await page.fill('input[name="age"]', '45')
+
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+      await expect(ageWarning).toBeVisible()
+      await expect(ageWarning).toContainText(/health.*risk/i)
+      await expect(ageWarning).toContainText(/increase/i)
+    })
+
+    test('should update age warning when age changes', async ({ page }) => {
+      const ageWarning = page.locator('[data-testid="age-warning"]')
+
+      // Young person warning
+      await page.fill('input[name="age"]', '28')
+      await expect(ageWarning).toContainText(/before.*30/i)
+
+      // Middle age warning
+      await page.fill('input[name="age"]', '35')
+      await expect(ageWarning).toContainText(/health/i)
+
+      // Older age warning
+      await page.fill('input[name="age"]', '50')
+      await expect(ageWarning).toContainText(/risk/i)
+    })
+
+    // -------------------------------------------------------------------------
+    // Risk Factors Display
+    // -------------------------------------------------------------------------
+
+    test('should display risk factors section', async ({ page }) => {
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toBeVisible()
+    })
+
+    test('should show MLS cost during delay period', async ({ page }) => {
+      await page.fill('input[name="income"]', '120000')
+      await page.fill('[data-testid="delay-years-input"]', '3')
+
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/MLS/i)
+      await expect(riskFactors).toContainText(/\$/)
+      await expect(riskFactors).toContainText(/3 year/i)
+    })
+
+    test('should show loading increase percentage', async ({ page }) => {
+      await page.fill('input[name="age"]', '35')
+      await page.fill('[data-testid="delay-years-input"]', '5')
+
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/loading/i)
+      await expect(riskFactors).toContainText(/increase/i)
+      await expect(riskFactors).toContainText(/10%/) // 5 years × 2%
+    })
+
+    test('should show waiting period warning', async ({ page }) => {
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/waiting period/i)
+    })
+
+    test('should update MLS cost when delay years change', async ({ page }) => {
+      await page.fill('input[name="income"]', '120000')
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+
+      // 1 year delay - $1,500 MLS (120000 × 1.25% × 1)
+      await page.fill('[data-testid="delay-years-input"]', '1')
+      await expect(riskFactors).toContainText('$1,500')
+
+      // 3 year delay - $4,500 MLS (120000 × 1.25% × 3)
+      await page.fill('[data-testid="delay-years-input"]', '3')
+      await expect(riskFactors).toContainText('$4,500')
+    })
+
+    test('should update loading increase when delay years change', async ({ page }) => {
+      await page.fill('input[name="age"]', '30')
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+
+      // 1 year delay - 2% increase
+      await page.fill('[data-testid="delay-years-input"]', '1')
+      await expect(riskFactors).toContainText('2%')
+
+      // 5 year delay - 10% increase
+      await page.fill('[data-testid="delay-years-input"]', '5')
+      await expect(riskFactors).toContainText('10%')
+    })
+
+    test('should show zero MLS cost for low income', async ({ page }) => {
+      await page.fill('input[name="income"]', '80000') // Below MLS threshold
+
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/MLS/i)
+      await expect(riskFactors).toContainText(/\$0/)
+    })
+
+    // -------------------------------------------------------------------------
+    // Integration with other features
+    // -------------------------------------------------------------------------
+
+    test('should work with family status', async ({ page }) => {
+      await page.click('[data-testid="family-option"]')
+      await page.fill('input[name="income"]', '200000')
+      await page.fill('input[name="numChildren"]', '2')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/MLS/i)
+    })
+
+    test('should work with immigrant status', async ({ page }) => {
+      await page.click('[data-testid="immigrant-checkbox"]')
+      await page.fill('input[name="age"]', '42')
+      await page.fill('input[name="medicareAge"]', '39')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toBeVisible()
+
+      const riskFactors = page.locator('[data-testid="risk-factors"]')
+      await expect(riskFactors).toContainText(/loading/i)
+    })
+
+    test('should show consistent recommendation with result message', async ({ page }) => {
+      // When recommendation says "can wait", result should show "saves"
+      // Older person with low income saves money by delaying
+      await page.fill('input[name="age"]', '40')
+      await page.fill('input[name="income"]', '80000')
+
+      const recommendationBox = page.locator('[data-testid="recommendation-box"]')
+      await expect(recommendationBox).toHaveAttribute('data-recommendation', 'can-wait')
+
+      const resultMessage = page.locator('[data-testid="result-message"]')
+      await expect(resultMessage).toContainText(/save/i)
+    })
+
+    // -------------------------------------------------------------------------
+    // Medical cost disclaimer
+    // -------------------------------------------------------------------------
+
+    test('should display medical cost disclaimer', async ({ page }) => {
+      const disclaimer = page.locator('[data-testid="medical-disclaimer"]')
+      await expect(disclaimer).toBeVisible()
+      await expect(disclaimer).toContainText(/medical/i)
+      await expect(disclaimer).toContainText(/not included/i)
+    })
+
+    test('should show example surgery costs in disclaimer', async ({ page }) => {
+      const disclaimer = page.locator('[data-testid="medical-disclaimer"]')
+      await expect(disclaimer).toContainText(/surgery/i)
+      await expect(disclaimer).toContainText(/\$/)
+    })
+  })
 })

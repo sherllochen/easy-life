@@ -417,7 +417,7 @@ src/components/
 - ✅ **Slice 2:** Complete - Family status & MLS auto-calculation
 - ✅ **Slice 3:** Complete - Loading calculation (age-based & immigrant)
 - ✅ **Slice 4:** Complete - Multi-year comparison with cost scenarios
-- ⏳ **Slice 5:** Pending - Detailed formula breakdown
+- ✅ **Slice 5:** Complete - Detailed formula breakdown
 - ⏳ **Slice 6:** Pending - Decision recommendation & warnings
 - ⏳ **Slice 7:** Pending - Polish & bilingual support
 
@@ -564,18 +564,30 @@ tests/e2e/hospital-calculator.e2e.spec.ts       (modified - added 19 Slice 4 tes
 - Currency formatting for all costs
 - Proper handling of negative costs (savings)
 
+### Slice 5 Completed
+
+2. **Slice 5 (Detailed Formula Breakdown)** ✅
+   - Implemented toggle button "Show Details" / "Hide Details"
+   - Expandable breakdown section showing:
+     - Loading increase cost: P × X × 0.2
+     - MLS paid during delay: Income × MLS Rate × X
+     - Premium saved during delay: -P × (1 + L₀) × X
+   - Net cost calculation with all values displayed
+   - Dynamic updates when inputs change
+   - Tests: 18 new e2e tests passing
+   - Commit: 9602d68
+
 ### Ready for Next Session
 
-**Next task:** Slice 5 - Detailed Formula Breakdown
+**Next task:** Slice 6 - Decision Recommendation & Warnings
 
 Features to implement:
-- Expandable "Show calculation details" section
-- Display three formula components:
-  1. Loading increase cost: P × X × 0.2
-  2. MLS paid during delay: Income × MLS Rate × X
-  3. Premium saved during delay: -P × (1 + L₀) × X
-- Show step-by-step calculation with actual values
-- Help users understand where numbers come from
+- Colored recommendation box at top of results:
+  - 🟢 Green: "Recommend buying now" (cost > $3,000)
+  - 🟡 Yellow: "Can wait, but consider risks" (cost $0-$3,000)
+  - 🔵 Blue: "Economically can wait" (saves money)
+- Age-based warnings
+- Risk factors highlighted (MLS cost, loading increase)
 
 ---
 

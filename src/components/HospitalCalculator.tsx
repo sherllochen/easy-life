@@ -492,6 +492,100 @@ export function HospitalCalculator() {
         </div>
       </form>
 
+      {/* Recommendation Box - shows when we have valid inputs */}
+      {result && (
+        <div
+          data-testid="recommendation-box"
+          data-recommendation={
+            result.netCost < 0 ? 'can-wait' :
+            result.netCost <= 3000 ? 'consider' : 'buy-now'
+          }
+          className={`p-4 rounded-lg border-2 mb-4 ${
+            result.netCost < 0
+              ? 'bg-blue-50 border-blue-300 text-blue-800'
+              : result.netCost <= 3000
+              ? 'bg-yellow-50 border-yellow-300 text-yellow-800'
+              : 'bg-green-50 border-green-300 text-green-800'
+          }`}
+        >
+          <div className="font-bold text-lg">
+            {result.netCost < 0 ? (
+              <>🔵 Economically Can Wait</>
+            ) : result.netCost <= 3000 ? (
+              <>🟡 Consider Your Options</>
+            ) : (
+              <>🟢 Recommend Buying Now</>
+            )}
+          </div>
+          <div className="text-sm mt-1">
+            {result.netCost < 0 ? (
+              <>Delaying saves you money, but consider health and lifestyle factors.</>
+            ) : result.netCost <= 3000 ? (
+              <>Moderate cost to delay. Consider risks and your personal situation.</>
+            ) : (
+              <>Delaying costs significantly more. Buy now to avoid extra expenses.</>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Age Warning */}
+      {age && parseInt(age) > 0 && (
+        <div
+          data-testid="age-warning"
+          className={`p-3 rounded-md mb-4 ${
+            parseInt(age) < 30
+              ? 'bg-blue-50 border border-blue-200 text-blue-800'
+              : parseInt(age) < 40
+              ? 'bg-yellow-50 border border-yellow-200 text-yellow-800'
+              : 'bg-orange-50 border border-orange-200 text-orange-800'
+          }`}
+        >
+          {parseInt(age) < 30 ? (
+            <>⏰ <strong>Buy before age 30</strong> to avoid lifetime loading on your premium.</>
+          ) : parseInt(age) < 40 ? (
+            <>💭 <strong>Consider health risks</strong> and your long-term plans when deciding.</>
+          ) : (
+            <>⚠️ <strong>Health risks increase</strong> with age. Consider coverage sooner rather than later.</>
+          )}
+        </div>
+      )}
+
+      {/* Risk Factors */}
+      {age && parseInt(age) > 0 && income && parseInt(income) > 0 && (
+        <div data-testid="risk-factors" className="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+          <h3 className="font-semibold mb-3">Factors to Consider</h3>
+          <ul className="space-y-2 text-sm">
+            <li className="flex items-start gap-2">
+              <span className="text-red-500">💰</span>
+              <span>
+                <strong>MLS cost:</strong> You&apos;ll pay {formatCurrency(breakdownValues.mlsCost)} in Medicare Levy Surcharge over {breakdownValues.delayYears} {breakdownValues.delayYears === 1 ? 'year' : 'years'}
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500">📈</span>
+              <span>
+                <strong>Loading increase:</strong> Your premium loading will increase by {breakdownValues.delayYears * 2}% if you delay {breakdownValues.delayYears} {breakdownValues.delayYears === 1 ? 'year' : 'years'}
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-purple-500">⏳</span>
+              <span>
+                <strong>Waiting periods:</strong> Most policies have 2-12 month waiting periods for benefits
+              </span>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      {/* Medical Disclaimer */}
+      {age && parseInt(age) > 0 && (
+        <div data-testid="medical-disclaimer" className="p-3 bg-red-50 border border-red-200 rounded-md mb-4 text-sm text-red-800">
+          <strong>⚕️ Important:</strong> Medical costs are not included in this calculation.
+          Any surgery could cost $10,000-$30,000+ without insurance.
+        </div>
+      )}
+
       {result && (
         <div data-testid="calculator-result" className="bg-gray-50 p-6 rounded-lg border border-gray-200">
           <h2 className="text-2xl font-semibold mb-4">Results</h2>
